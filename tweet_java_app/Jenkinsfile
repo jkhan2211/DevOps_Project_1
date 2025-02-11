@@ -11,8 +11,10 @@ pipeline {
 
     stages {
         stage('Build Maven') {
-            steps {
-                sh 'mvn clean deploy'
+            dir('tweet_java_app'){
+                steps {
+                    sh 'mvn clean deploy'
+                }
             }
         }
         
