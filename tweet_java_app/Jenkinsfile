@@ -24,8 +24,14 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('jkhan-sonarqube-server') {
-                    sh "${scannerHome}/bin/sonar-scanner"
+                dir('tweet_java_app'){
+                    withSonarQubeEnv('jkhan-sonarqube-server') {
+                         sh """
+                    cd ${WORKSPACE}/tweet_java_app && \
+                    ${scannerHome}/bin/sonar-scanner \
+                    -Dproject.settings=sonar-project.properties
+                """
+                }
                 }
             }
         }
