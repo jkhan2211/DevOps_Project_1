@@ -15,15 +15,11 @@ pipeline {
             steps {
                 dir('tweet_java_app') {
                     sh '''
-                        mvn clean verify  // Changed from package to verify
+                        mvn clean verify 
                     '''
                 }
             }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-            }
+ 
         }
 
         stage('SonarQube Analysis') {
@@ -47,16 +43,6 @@ pipeline {
             }
         }
 
-        stage('Verify Reports') {
-    steps {
-        dir('tweet_java_app') {
-            sh '''
-                ls -la target/site/jacoco/
-                cat target/site/jacoco/jacoco.xml || echo "JaCoCo XML not found"
-            '''
-        }
-    }
-}
 
     }
 
