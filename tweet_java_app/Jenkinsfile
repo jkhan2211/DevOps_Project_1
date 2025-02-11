@@ -10,45 +10,73 @@ pipeline {
         MAVEN_OPTS = '-Xmx2048m'
     }
 
+    options {
+        timeout(time: 1, unit: 'HOURS')  // Add timeout to prevent hanging
+        disableConcurrentBuilds()        // Prevent concurrent builds
+    }
+
     stages {
-        stage('Build') {
+        stage('Build and Test') {
             steps {
                 dir('tweet_java_app') {
                     sh '''
-                        java -version
-                        mvn clean package
+                        mvn clean verify  // Changed from package to verify
                     '''
                 }
             }
-        }
-        stage('Test') {
-            steps {
-                     dir('tweet_java_app') {
-                    sh '''
-                        mvn surefire-report:report
-                    '''
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
                 }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                dir('tweet_java_app'){
+                dir('tweet_java_app') {
                     withSonarQubeEnv('jkhan-sonarqube-server') {
-                         sh """
-                    cd ${WORKSPACE}/tweet_java_app && \
-                    ${scannerHome}/bin/sonar-scanner \
-                    -Dproject.settings=sonar-project.properties
-                """
-                }
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=ttrend01_trendapp \
+                            -Dsonar.organization=ttrend01 \
+                            -Dsonar.sources=src/main/java \
+                            -Dsonar.java.binaries=target/classes \
+                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                            -Dsonar.java.libraries=target/*.jar \
+                            -Dsonar.sourceEncoding=UTF-8 \
+                            -Dsonar.language=java \
+                            -Dsonar.java.source=1.8
+                        """
+                    }
                 }
             }
         }
+
+        stage('Verify Reports') {
+    steps {
+        dir('tweet_java_app') {
+            sh '''
+                ls -la target/site/jacoco/
+                cat target/site/jacoco/jacoco.xml || echo "JaCoCo XML not found"
+            '''
+        }
+    }
+}
+
     }
 
     post {
         always {
             cleanWs()
+        }
+        failure {
+            echo 'Pipeline failed'
+        }
+        unstable {
+            echo 'Pipeline unstable'
+        }
+        success {
+            echo 'Pipeline succeeded'
         }
     }
 }
