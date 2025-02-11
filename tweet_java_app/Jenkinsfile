@@ -1,29 +1,44 @@
 pipeline {
     agent {
         node {
-            label 'maven'
+            label 'maven-slaves'
         }
     }
     environment {
         PATH = "/opt/apache-maven-3.9.2/bin:$PATH"
-        scannerHome = tool 'jkhan-sonarqube-scanner'  // Define SonarQube scanner tool here
+        scannerHome = tool 'jkhan-sonarqube-scanner'
+        MAVEN_OPTS = '-Xmx2048m'
     }
 
     stages {
-        stage('Build Maven') {
+        stage('Build and Test') {
             steps {
                 dir('tweet_java_app') {
-                    sh 'mvn clean deploy'
+                    sh '''
+                        java -version
+                        mvn clean package
+                    '''
+                }
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
                 }
             }
         }
-        
+
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('jkhan-sonarqube-server') {
                     sh "${scannerHome}/bin/sonar-scanner"
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
         }
     }
 }
