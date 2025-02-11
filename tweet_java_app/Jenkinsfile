@@ -11,7 +11,7 @@ pipeline {
     }
 
     options {
-        timeout(time: 1, unit: 'HOURS')  // Add timeout to prevent hanging
+        timeout(time: 1, unit: 'HOUR')  // Add timeout to prevent hanging
         disableConcurrentBuilds()        // Prevent concurrent builds
     }
 
