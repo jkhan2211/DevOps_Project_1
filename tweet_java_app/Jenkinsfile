@@ -10,11 +10,6 @@ pipeline {
         MAVEN_OPTS = '-Xmx2048m'
     }
 
-    options {
-        timeout(time: 1, unit: 'HOUR')  // Add timeout to prevent hanging
-        disableConcurrentBuilds()        // Prevent concurrent builds
-    }
-
     stages {
         stage('Build and Test') {
             steps {
