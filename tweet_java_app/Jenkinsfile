@@ -11,12 +11,21 @@ pipeline {
     }
 
     stages {
-        stage('Build and Tests') {
+        stage('Build') {
             steps {
                 dir('tweet_java_app') {
                     sh '''
                         java -version
                         mvn clean package
+                    '''
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                     dir('tweet_java_app') {
+                    sh '''
+                        mvn surefire-report:report
                     '''
                 }
             }
