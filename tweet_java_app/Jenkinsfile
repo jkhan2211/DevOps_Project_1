@@ -19,16 +19,16 @@ pipeline {
                     '''
                 }
             }
+        }
+
         stage('Test') {
             steps {
                 dir('tweet_java_app') {
                     sh '''
-                    mvn sunfire-report:report
+                        mvn sunfire-report:report
                     '''
                 }
             }
-        }
- 
         }
 
         stage('SonarQube Analysis') {
@@ -51,8 +51,6 @@ pipeline {
                 }
             }
         }
-
-
     }
 
     post {
