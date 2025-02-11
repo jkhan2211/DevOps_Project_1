@@ -11,14 +11,23 @@ pipeline {
     }
 
     stages {
-        stage('Build and Test') {
+        stage('Build') {
             steps {
                 dir('tweet_java_app') {
                     sh '''
-                        mvn clean deploy
+                        mvn clean deploy -Dmaven.test.skip=true
                     '''
                 }
             }
+        stage('Test') {
+            steps {
+                dir('tweet_java_app') {
+                    sh '''
+                    mvn sunfire-report:report
+                    '''
+                }
+            }
+        }
  
         }
 
