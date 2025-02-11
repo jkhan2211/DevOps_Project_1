@@ -11,7 +11,7 @@ pipeline {
     }
 
     stages {
-        stage('Build and Test') {
+        stage('Build and Tests') {
             steps {
                 dir('tweet_java_app') {
                     sh '''
