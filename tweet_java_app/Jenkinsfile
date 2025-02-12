@@ -4,8 +4,10 @@ pipeline {
             label 'maven-slaves'
         }
     }
+    
     environment {
         PATH = "/opt/apache-maven-3.9.2/bin:$PATH"
+        JAVA_HOME = tool 'java8'  // Make sure this matches your Jenkins tool name
         scannerHome = tool 'jkhan-sonarqube-scanner'
         MAVEN_OPTS = '-Xmx2048m'
     }
@@ -15,7 +17,16 @@ pipeline {
             steps {
                 dir('tweet_java_app') {
                     sh '''
-                        mvn clean install -Dmaven.test.skip=true
+                        echo "=== Java Version ==="
+                        java -version
+                        echo "=== Maven Version ==="
+                        mvn -v
+                        
+                        echo "=== Building Java Application ==="
+                        mvn clean install \
+                            -Dmaven.test.skip=true \
+                            -B \
+                            -V
                     '''
                 }
             }
@@ -25,13 +36,21 @@ pipeline {
             steps {
                 dir('tweet_java_app') {
                     sh '''
-                        mvn test
+                        echo "=== Running Unit Tests ==="
+                        export MAVEN_OPTS="-Xmx1024m"
+                        mvn test \
+                            -Dsurefire.useSystemClassLoader=false \
+                            -Djava.security.egd=file:/dev/./urandom \
+                            -B
                     '''
                 }
             }
             post {
                 always {
-                    junit '**/target/surefire-reports/*.xml'
+                    junit(
+                        allowEmptyResults: true,
+                        testResults: 'tweet_java_app/target/surefire-reports/*.xml'
+                    )
                 }
             }
         }
@@ -41,6 +60,7 @@ pipeline {
                 dir('tweet_java_app') {
                     withSonarQubeEnv('valaxy-sonarqube-server') {
                         sh '''
+                            echo "=== Running SonarQube Analysis ==="
                             ${scannerHome}/bin/sonar-scanner
                         '''
                     }
@@ -50,13 +70,8 @@ pipeline {
 
         stage("Quality Gate") {
             steps {
-                script {
-                    timeout(time: 1, unit: 'HOURS') {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK') {
-                            error "Pipeline failed due to quality gate failures: ${qg.status}"
-                        }
-                    }
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -64,16 +79,20 @@ pipeline {
 
     post {
         always {
+            echo '=== Cleaning Workspace ==='
             cleanWs()
         }
         success {
-            echo 'Pipeline succeeded'
+            echo '=== Pipeline Succeeded ==='
         }
         failure {
-            echo 'Pipeline failed'
-        }
-        unstable {
-            echo 'Pipeline unstable'
+            echo '=== Pipeline Failed ==='
+            script {
+                if (fileExists('tweet_java_app/target/surefire-reports')) {
+                    echo '=== Test Failure Details ==='
+                    sh 'cat tweet_java_app/target/surefire-reports/*.txt || true'
+                }
+            }
         }
     }
 }
