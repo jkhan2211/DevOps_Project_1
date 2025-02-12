@@ -29,32 +29,34 @@ pipeline {
                     '''
                 }
             }
-        }
-
-           stage("Sonar Analysis") {
-            environment {
-                scannerHome = tool 'valaxy-sonarscanner'
-            }
-            steps {
-                echo "<--------------- Sonar Analysis started -------------->"
-                withSonarQubeEnv('valaxy-sonarqube-server') {
-                    sh "${scannerHome}/bin/sonar-scanner"
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
                 }
-                echo "<--------------- Sonar Analysis completed -------------->"
             }
         }
 
-           stage("Quality Gate") {
+        stage("Sonar Analysis") {
+            steps {
+                dir('tweet_java_app') {
+                    withSonarQubeEnv('valaxy-sonarqube-server') {
+                        sh '''
+                            ${scannerHome}/bin/sonar-scanner
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage("Quality Gate") {
             steps {
                 script {
-                    echo "<--------------- Sonar Gate Analysis Started -------------->"
                     timeout(time: 1, unit: 'HOURS') {
                         def qg = waitForQualityGate()
                         if (qg.status != 'OK') {
                             error "Pipeline failed due to quality gate failures: ${qg.status}"
                         }
                     }
-                    echo "<--------------- Sonar Gate Analysis completed -------------->"
                 }
             }
         }
@@ -64,14 +66,14 @@ pipeline {
         always {
             cleanWs()
         }
+        success {
+            echo 'Pipeline succeeded'
+        }
         failure {
             echo 'Pipeline failed'
         }
         unstable {
             echo 'Pipeline unstable'
-        }
-        success {
-            echo 'Pipeline succeeded'
         }
     }
 }
