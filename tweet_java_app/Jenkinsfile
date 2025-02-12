@@ -1,8 +1,12 @@
 pipeline {
     agent {
+       tools {
+        jdk 'java8'
+    
         node {
             label 'maven-slaves'
         }
+    }
     }
     
     environment {
