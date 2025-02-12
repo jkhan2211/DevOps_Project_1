@@ -15,39 +15,46 @@ pipeline {
             steps {
                 dir('tweet_java_app') {
                     sh '''
-                        mvn clean deploy
+                        mvn clean install -Dmaven.test.skip=true
                     '''
                 }
             }
         }
 
-        stage('Test') {
+        stage('Unit Test') {
             steps {
                 dir('tweet_java_app') {
                     sh '''
-                        mvn sunfire-report:report
+                        mvn test
                     '''
                 }
             }
         }
 
-        stage('SonarQube Analysis') {
+           stage("Sonar Analysis") {
+            environment {
+                scannerHome = tool 'valaxy-sonarscanner'
+            }
             steps {
-                dir('tweet_java_app') {
-                    withSonarQubeEnv('jkhan-sonarqube-server') {
-                        sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=ttrend01_trendapp \
-                            -Dsonar.organization=ttrend01 \
-                            -Dsonar.sources=src/main/java \
-                            -Dsonar.java.binaries=target/classes \
-                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-                            -Dsonar.java.libraries=target/*.jar \
-                            -Dsonar.sourceEncoding=UTF-8 \
-                            -Dsonar.language=java \
-                            -Dsonar.java.source=1.8
-                        """
+                echo "<--------------- Sonar Analysis started -------------->"
+                withSonarQubeEnv('valaxy-sonarqube-server') {
+                    sh "${scannerHome}/bin/sonar-scanner"
+                }
+                echo "<--------------- Sonar Analysis completed -------------->"
+            }
+        }
+
+           stage("Quality Gate") {
+            steps {
+                script {
+                    echo "<--------------- Sonar Gate Analysis Started -------------->"
+                    timeout(time: 1, unit: 'HOURS') {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "Pipeline failed due to quality gate failures: ${qg.status}"
+                        }
                     }
+                    echo "<--------------- Sonar Gate Analysis completed -------------->"
                 }
             }
         }
