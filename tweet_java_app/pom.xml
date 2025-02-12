@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <!-- Parent configuration -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.2.0.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath /> <!-- lookup parent from repository -->
     </parent>
+
+    <!-- Project Information -->
     <groupId>com.valaxy</groupId>
     <artifactId>demo-workshop</artifactId>
     <version>2.1.2</version>
@@ -15,12 +20,14 @@
     <packaging>jar</packaging>
     <description>Demo project for Spring Boot</description>
 
+    <!-- Properties -->
     <properties>
         <java.version>1.8</java.version>
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
         <junit-jupiter.version>5.7.0</junit-jupiter.version>
     </properties>
 
+    <!-- Dependencies -->
     <dependencies>
         <!-- Spring Boot Dependencies -->
         <dependency>
@@ -32,19 +39,21 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- API Dependencies -->
+        <!-- GitHub API Dependency -->
         <dependency>
             <groupId>org.kohsuke</groupId>
             <artifactId>github-api</artifactId>
             <version>1.99</version>
         </dependency>
+
+        <!-- Twitter4j Dependency -->
         <dependency>
             <groupId>org.twitter4j</groupId>
             <artifactId>twitter4j-core</artifactId>
             <version>3.0.6</version>
         </dependency>
 
-        <!-- Test Dependencies -->
+        <!-- JUnit Jupiter Dependencies for Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -57,6 +66,8 @@
             <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Spring Boot Starter Test for Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -72,6 +83,8 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- Mockito JUnit Jupiter for Mocking in Tests -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
@@ -79,12 +92,16 @@
         </dependency>
     </dependencies>
 
+    <!-- Build Plugins -->
     <build>
         <plugins>
+            <!-- Spring Boot Maven Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
+            <!-- Maven Surefire Plugin for Running Tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -96,6 +113,8 @@
                     <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
+
+            <!-- JaCoCo Maven Plugin for Code Coverage -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -119,6 +138,7 @@
         </plugins>
     </build>
 
+    <!-- Distribution Management for Artifact Repository -->
     <distributionManagement>
         <repository>
             <id>dev</id>
